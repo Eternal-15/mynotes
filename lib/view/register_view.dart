@@ -1,16 +1,17 @@
 import 'package:firebase_auth/firebase_auth.dart';
+//import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+//import 'package:mynotes/firebase_options.dart';
 
-class LoginView extends StatefulWidget {
-  const LoginView({super.key});
+class RegisterView extends StatefulWidget {
+  const RegisterView({super.key});
 
   @override
-  State<LoginView> createState() => _LoginViewState();
+  State<RegisterView> createState() => _RegisterViewState();
 }
 
-class _LoginViewState extends State<LoginView> {
-
-  late final TextEditingController _email;
+class _RegisterViewState extends State<RegisterView> {
+    late final TextEditingController _email;
   late final TextEditingController _password;
   @override
   void initState() {
@@ -28,11 +29,11 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Register'),
-      ),
-      body: Column(
-              children: [
+return Scaffold(
+  appBar: AppBar(title: const Text('Register'),
+  ),
+  body: Column(
+                        children: [
               TextField(
                 controller: _email,
                 autocorrect: false,
@@ -49,31 +50,30 @@ class _LoginViewState extends State<LoginView> {
               TextButton(onPressed: () async { 
                 final email = _email.text;
                 final password = _password.text;
-                try {
-                  final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+                  try {
+                  final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
                   email: email, 
                   password: password);
                   print(userCredential);
                   } on FirebaseAuthException catch(e) {
-                    print(e.code);
-                    if(e.code == 'user-not-found') {
-                      print('User not found');
-                    }else {
+                    if(e.code == 'weak-password') {
+                      print('Weak password. Try using alphanumeric character with symbols like @, #,etc');
+                    }else if(e.code == 'email-already-in-use') {
                     print('Error:${e.code}');
                     }
                   }
               },
-              child: const Text('Login'),
-              ),
-              TextButton(
-                onPressed: () async{
-                  Navigator.of(context).pushNamedAndRemoveUntil('/register/',
-                   (route) => false);
-                },
-                child: const Text('Not registered? Register now'),
-              )
-            ],
-          ),
+              child: const Text('Register'),
+            ),
+              TextButton(onPressed: () {
+              Navigator.of(context).pushNamedAndRemoveUntil('/login/',
+              (route) => false,
+            );
+          },
+          child: const Text('Already registered?Login here'),
+         )
+       ],
+      ),
     );
   }
 }
