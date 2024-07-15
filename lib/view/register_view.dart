@@ -1,7 +1,9 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:firebase_auth/firebase_auth.dart';
-//import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-//import 'package:mynotes/firebase_options.dart';
+import 'package:mynotes/constant/routes.dart';
+import 'package:mynotes/utilites/showerrordialoge.dart';
 
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
@@ -32,41 +34,65 @@ class _RegisterViewState extends State<RegisterView> {
 return Scaffold(
   appBar: AppBar(title: const Text('Register'),
   ),
-  body: Column(
-                        children: [
+    body: Column(
+              children: [
               TextField(
                 controller: _email,
                 autocorrect: false,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(hintText: 'Your email e.g. {abcdefg@xyz.com}'),
+                decoration: const InputDecoration(hintText: 'Email}'),
               ),
               TextField(
                 controller: _password,
                 obscureText: true,
                 enableSuggestions: false,
                 autocorrect: false,
-                decoration: const InputDecoration(hintText: 'Your password'),
+                decoration: const InputDecoration(hintText: 'Password'),
               ),
-              TextButton(onPressed: () async { 
+              TextButton(onPressed: () async{ 
                 final email = _email.text;
                 final password = _password.text;
                   try {
-                  final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-                  email: email, 
-                  password: password);
-                  print(userCredential);
+                  await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                    email: email, 
+                    password: password,
+                    );
+                    final user = FirebaseAuth.instance.currentUser;
+                    await user?.sendEmailVerification();
+                    Navigator.of(context).pushNamed(verifyEmailRoute);
                   } on FirebaseAuthException catch(e) {
-                    if(e.code == 'weak-password') {
-                      print('Weak password. Try using alphanumeric character with symbols like @, #,etc');
-                    }else if(e.code == 'email-already-in-use') {
-                    print('Error:${e.code}');
-                    }
+                      if(e.code == 'weak-password') {
+                         await showErrorDialog(
+                          context, 
+                          'Weak Password'
+                          );
+                      }else if(e.code == 'email-already-in-use') {
+                        await showErrorDialog(
+                          context, 
+                          'Email is already in use'
+                          );
+                      }else if(e.code == 'invaild-email') {
+                        await showErrorDialog(
+                          context, 
+                          'Email is invaild'
+                          );
+                      }else{
+                        await showErrorDialog(
+                          context, 
+                          'Error: ${e.code}'
+                          );
+                      }
+                  } catch (e) {
+                    await showErrorDialog(
+                          context, 
+                          e.toString()
+                          );
                   }
               },
               child: const Text('Register'),
             ),
               TextButton(onPressed: () {
-              Navigator.of(context).pushNamedAndRemoveUntil('/login/',
+              Navigator.of(context).pushNamedAndRemoveUntil(loginRoutes,
               (route) => false,
             );
           },
